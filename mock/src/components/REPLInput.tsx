@@ -4,10 +4,10 @@ import { ControlledInput } from "./ControlledInput";
 
 interface REPLInputProps {
   // TODO: Fill this with desired props... Maybe something to keep track of the submitted commands
-  commandHistory: string[];
-  setCommandHistory: Dispatch<SetStateAction<string[]>>;
-  inputHistory: string[];
-  setInputHistory: Dispatch<SetStateAction<string[]>>;
+  commandHistory: { command: string; output: string }[];
+  setCommandHistory: Dispatch<
+    SetStateAction<{ command: string; output: string }[]>
+  >;
   modeSwitch: number[];
   setModeSwitch: Dispatch<SetStateAction<number[]>>;
   // history: string[];
@@ -19,34 +19,127 @@ export function REPLInput(props: REPLInputProps) {
   // Remember: let React manage state in your webapp.
   // Manages the contents of the input box
   const [commandString, setCommandString] = useState<string>("");
-  const [modeSwitch, setModeSwitch] = useState<number>(0);
+  const [previousFile, setPreviousFile] = useState<string>("");
+  const [hasFileBeenLoaded, setHasFileBeenLoaded] = useState<number>(0);
+  let dataMap = new Map();
+  const exampleCSV1 = [
+    [1, 2, 3, 4, 5],
+    ["The", "song", "remains", "the", "same."],
+  ];
+  const exampleCSV2 = [
+    [1, 2, 3, 4, 5],
+    ["Japan", "is", "pretty", "hard", ":(."],
+  ];
+  dataMap.set("data/songs/exampleCSV1", exampleCSV1);
+  dataMap.set("data/songs/exampleCSV2", exampleCSV2);
+
+  const [csvFormat, setCSVFormat] = useState<string>("");
+
   // const [count, setCount] = useState<number>(0);
   // const [history, setHistory] = useState<string>("");
+  function reformat(csvContents: string[][]) {
+    let csvTempFormat = "";
+    for (let i = 0; i < csvContents.length; i++) {
+      for (let j = 0; j < csvContents[i].length; j++) {
+        if (j < csvContents[i].length - 1) {
+          csvTempFormat = csvTempFormat + csvContents[i][j] + ",";
+        } else {
+          csvTempFormat = csvTempFormat + csvContents[i][j];
+        }
+      }
+      csvTempFormat = csvTempFormat;
+    }
+
+    props.setCommandHistory([
+      ...props.commandHistory,
+      { command: "view", output: csvTempFormat },
+    ]);
+  }
+
+  function view_file() {
+    reformat(dataMap.get(previousFile));
+  }
+
+  function load_file(input: string) {
+    let loadedFile = 0;
+    let prevFile = "";
+    if (dataMap.has(input) && hasFileBeenLoaded == 0) {
+      props.setCommandHistory([
+        ...props.commandHistory,
+        { command: "load_file", output: "File successfully loaded" },
+      ]);
+      prevFile = input;
+      setPreviousFile(prevFile);
+      loadedFile = 1;
+      setHasFileBeenLoaded(loadedFile);
+    } else if (hasFileBeenLoaded == 1) {
+      if (input === "") {
+        props.setCommandHistory([
+          ...props.commandHistory,
+          { command: "load_file", output: "File has been already loaded" },
+        ]);
+      } else {
+        prevFile = input;
+        setPreviousFile(prevFile);
+        props.setCommandHistory([
+          ...props.commandHistory,
+          {
+            command: "load_file",
+            output: "Loaded file has been updated to" + input,
+          },
+        ]);
+      }
+    } else if (!dataMap.has(input)) {
+      props.setCommandHistory([
+        ...props.commandHistory,
+        { command: "load_file", output: "File not found. Try again." },
+      ]);
+    } else if (hasFileBeenLoaded == 0) {
+      props.setCommandHistory([
+        ...props.commandHistory,
+        {
+          command: "load_file",
+          output: "File not previously loaded. Please enter a filepath.",
+        },
+      ]);
+    }
+  }
 
   function handleVerboseSubmit(commandString: string) {
     if (commandString == "") {
-      props.setCommandHistory([...props.commandHistory, commandString]);
       let message = "No command was given, please try again";
-      props.setInputHistory([...props.inputHistory, message]);
+      props.setCommandHistory([
+        ...props.commandHistory,
+        { command: "", output: message },
+      ]);
     } else {
       let command = "";
       let input = "";
       for (let i = 0; i < commandString.length; i++) {
         if (commandString[i] == " ") {
           command = commandString.substring(0, i);
-          props.setCommandHistory([...props.commandHistory, command]);
           input = commandString.substring(i + 1);
-          props.setInputHistory([...props.inputHistory, input]);
+          props.setCommandHistory([
+            ...props.commandHistory,
+            { command: command, output: input },
+          ]);
         } else {
           command.concat(commandString[i]);
         }
       }
       if (!commandString.includes(" ")) {
         let input = "";
-        props.setCommandHistory([...props.commandHistory, commandString]);
-        props.setInputHistory([...props.inputHistory, input]);
+        props.setCommandHistory([
+          ...props.commandHistory,
+          { command: command, output: input },
+        ]);
       }
-      // setCommandString("");
+      if (command == "load_file") {
+        load_file(input);
+      }
+      if (command == "view") {
+        view_file();
+      }
       command = "";
       input = "";
     }
@@ -59,19 +152,43 @@ export function REPLInput(props: REPLInputProps) {
     let input = "";
     let command = commandString;
     if (commandString == "") {
-      props.setCommandHistory([...props.commandHistory, commandString]);
       let message = "No command was given, please try again";
-      props.setInputHistory([...props.inputHistory, message]);
+      props.setCommandHistory([
+        ...props.commandHistory,
+        { command: commandString, output: message },
+      ]);
     } else {
-      props.setCommandHistory([...props.commandHistory, command]);
-      props.setInputHistory([...props.inputHistory, "Command Received"]);
+      props.setCommandHistory([
+        ...props.commandHistory,
+        { command: command, output: "Command Received" },
+      ]);
       setCommandString("");
       let s = 0;
       props.setModeSwitch([...props.modeSwitch, s]);
     }
+    for (let i = 0; i < commandString.length; i++) {
+      if (commandString[i] == " ") {
+        command = commandString.substring(0, i);
+        input = commandString.substring(i + 1);
+        props.setCommandHistory([
+          ...props.commandHistory,
+          { command: command, output: input },
+        ]);
+      } else {
+        command.concat(commandString[i]);
+      }
+    }
     if (!commandString.includes(" ")) {
-      props.setCommandHistory([...props.commandHistory, commandString]);
-      props.setInputHistory([...props.inputHistory, input]);
+      props.setCommandHistory([
+        ...props.commandHistory,
+        { command: commandString, output: input },
+      ]);
+    }
+    if (command == "load_file") {
+      load_file(input);
+    }
+    if (command == "view") {
+      view_file();
     }
     command = "";
     input = "";
@@ -81,10 +198,6 @@ export function REPLInput(props: REPLInputProps) {
    * We suggest breaking down this component into smaller components, think about the individual pieces
    * of the REPL and how they connect to each other...
    */
-  const currentMode =
-    props.modeSwitch.length > 0
-      ? props.modeSwitch[props.modeSwitch.length - 1]
-      : 0; // Default to mode 0 if array is empty
 
   return (
     <div className="repl-input">
@@ -104,60 +217,35 @@ export function REPLInput(props: REPLInputProps) {
       {/* TODO: Currently this button just counts up, can we make it push the contents of the input box to the history?*/}
       <button
         onClick={() => {
-          // use const with a useState in order to be able to effectively
+          let tempModeSwitch;
           if (commandString.toLowerCase() == "mode") {
             if (props.modeSwitch.length > 0) {
-              if (props.modeSwitch[props.modeSwitch.length - 1] === 0) {
-                setModeSwitch(1);
+              if (props.modeSwitch[props.modeSwitch.length - 1] == 0) {
+                tempModeSwitch = 1;
               } else {
-                setModeSwitch(0);
+                tempModeSwitch = 0;
               }
             } else {
-              props.setModeSwitch([...props.modeSwitch, 0]);
-              setModeSwitch(0);
+              tempModeSwitch = 0;
             }
+            props.setModeSwitch([...props.modeSwitch, tempModeSwitch]);
+
+            props.setCommandHistory([
+              ...props.commandHistory,
+              { command: "mode", output: "Mode switch successful" },
+            ]);
           } else {
-            if (modeSwitch == 1) {
+            if (props.modeSwitch[props.modeSwitch.length - 1] == 1) {
               handleVerboseSubmit(commandString);
             } else {
               handleBriefSubmit(commandString);
             }
           }
           setCommandString("");
-
-          // if (
-          //   commandString.toLowerCase() == "mode" &&
-          //   props.modeSwitch[props.modeSwitch.length - 1] == 0
-          // ) {
-          //   handleVerboseSubmit(commandString);
-          // } else {
-          //   handleBriefSubmit(commandString);
-          // }
         }}
       >
         Submit!
       </button>
-
-      {/* <button
-        onClick={() => {
-          if (commandString.toLowerCase() === "mode") {
-            // Toggle between modes 0 and 1 when "mode" command is entered
-            const newMode = currentMode === 0 ? 1 : 0;
-            props.setModeSwitch([...props.modeSwitch, newMode]);
-            // Optionally call a function based on the new mode
-          } else {
-            // Call the appropriate function based on the current mode
-            if (currentMode === 0) {
-              handleBriefSubmit(commandString);
-            } else if (currentMode === 1) {
-              handleVerboseSubmit(commandString);
-            }
-          }
-          setCommandString(""); // Reset command string after handling
-        }}
-      >
-        Submit!
-      </button> */}
     </div>
   );
 }

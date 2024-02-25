@@ -15,8 +15,10 @@ import { Dispatch, SetStateAction } from "react";
 
 export default function REPL() {
   // TODO: Add some kind of shared state that holds all the commands submitted.
-  const [commandHistory, setCommandHistory] = useState<string[]>([]);
-  const [inputHistory, setInputHistory] = useState<string[]>([]);
+  const [commandHistory, setCommandHistory] = useState<
+    { command: string; output: string }[]
+  >([]);
+  // const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [modeSwitch, setModeSwitch] = useState<number[]>([]);
   // const setModeSwitch = useState<number[]>();
   // const [history, setHistory] = useState<[string, string]>(["", ""]);
@@ -27,15 +29,15 @@ export default function REPL() {
       {/* TODO: Update your REPLHistory and REPLInput to take in new shared state as props */}
       <REPLHistory
         commandHistory={commandHistory}
-        inputHistory={inputHistory}
+        // inputHistory={inputHistory}
         modeSwitch={modeSwitch}
       />
       <hr></hr>
       <REPLInput
         commandHistory={commandHistory}
         setCommandHistory={setCommandHistory}
-        inputHistory={inputHistory}
-        setInputHistory={setInputHistory}
+        // inputHistory={inputHistory}
+        // setInputHistory={setInputHistory}
         modeSwitch={modeSwitch}
         setModeSwitch={setModeSwitch}
       />
