@@ -104,20 +104,20 @@ export function REPLInput(props: REPLInputProps) {
       {/* TODO: Currently this button just counts up, can we make it push the contents of the input box to the history?*/}
       <button
         onClick={() => {
-          let newMode;
+          // use const with a useState in order to be able to effectively
           if (commandString.toLowerCase() == "mode") {
             if (props.modeSwitch.length > 0) {
               if (props.modeSwitch[props.modeSwitch.length - 1] === 0) {
-                newMode = 1;
+                setModeSwitch(1);
               } else {
-                newMode = 0;
+                setModeSwitch(0);
               }
             } else {
               props.setModeSwitch([...props.modeSwitch, 0]);
-              newMode = 0;
+              setModeSwitch(0);
             }
           } else {
-            if (newMode == 1) {
+            if (modeSwitch == 1) {
               handleVerboseSubmit(commandString);
             } else {
               handleBriefSubmit(commandString);
