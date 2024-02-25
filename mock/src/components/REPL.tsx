@@ -2,6 +2,7 @@ import { useState } from "react";
 import "../styles/main.css";
 import { REPLHistory } from "./REPLHistory";
 import { REPLInput } from "./REPLInput";
+import { Dispatch, SetStateAction } from "react";
 
 /* 
   You'll want to expand this component (and others) for the sprints! Remember 
@@ -16,6 +17,8 @@ export default function REPL() {
   // TODO: Add some kind of shared state that holds all the commands submitted.
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [inputHistory, setInputHistory] = useState<string[]>([]);
+  const [modeSwitch, setModeSwitch] = useState<number[]>([]);
+  // const setModeSwitch = useState<number[]>();
   // const [history, setHistory] = useState<[string, string]>(["", ""]);
   return (
     <div className="repl">
@@ -24,7 +27,8 @@ export default function REPL() {
       {/* TODO: Update your REPLHistory and REPLInput to take in new shared state as props */}
       <REPLHistory
         commandHistory={commandHistory}
-        // inputHistory={inputHistory}
+        inputHistory={inputHistory}
+        modeSwitch={modeSwitch}
       />
       <hr></hr>
       <REPLInput
@@ -32,6 +36,8 @@ export default function REPL() {
         setCommandHistory={setCommandHistory}
         inputHistory={inputHistory}
         setInputHistory={setInputHistory}
+        modeSwitch={modeSwitch}
+        setModeSwitch={setModeSwitch}
       />
     </div>
   );
