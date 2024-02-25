@@ -113,7 +113,7 @@ export function REPLInput(props: REPLInputProps) {
                 newMode = 0;
               }
             } else {
-              // props.setModeSwitch([...props.modeSwitch, 0]);
+              props.setModeSwitch([...props.modeSwitch, 0]);
               newMode = 0;
             }
           } else {
