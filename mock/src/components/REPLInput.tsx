@@ -39,25 +39,53 @@ export function REPLInput(props: REPLInputProps) {
   // const [history, setHistory] = useState<string>("");
   function reformat(csvContents: string[][]) {
     let csvTempFormat = "";
-    for (let i = 0; i < csvContents.length; i++) {
+    let htmlTable = "<table>";
+
+    // Assuming the first row contains headers
+    htmlTable += "<tr>";
+    for (let j = 0; j < csvContents[0].length; j++) {
+      htmlTable += `<th>${csvContents[0][j]}</th>`;
+    }
+    htmlTable += "</tr>";
+
+    for (let i = 1; i < csvContents.length; i++) {
+      htmlTable += "<tr>";
       for (let j = 0; j < csvContents[i].length; j++) {
         if (j < csvContents[i].length - 1) {
-          csvTempFormat = csvTempFormat + csvContents[i][j] + ",";
+          csvTempFormat += csvContents[i][j] + ",";
+          htmlTable += `<td>${csvContents[i][j]}</td>`;
         } else {
-          csvTempFormat = csvTempFormat + csvContents[i][j];
+          csvTempFormat += csvContents[i][j];
+          htmlTable += `<td>${csvContents[i][j]}</td>`;
         }
       }
-      csvTempFormat = csvTempFormat;
+      htmlTable += "</tr>";
     }
 
+    htmlTable += "</table>";
+
+    // Wrap the table in a div
+    let htmlOutput = `<div class="csv-table">${htmlTable}</div>`;
+
+    // Optionally update the state with both CSV and HTML table formats
     props.setCommandHistory([
       ...props.commandHistory,
-      { command: "view", output: csvTempFormat },
+      { command: "view", output: htmlOutput }, // Use htmlOutput to include the div-wrapped table
     ]);
   }
 
   function view_file() {
-    reformat(dataMap.get(previousFile));
+    if (previousFile == "") {
+      props.setCommandHistory([
+        ...props.commandHistory,
+        {
+          command: "load_file",
+          output: "A file first needs to be loaded before performing view",
+        },
+      ]);
+    } else {
+      reformat(dataMap.get(previousFile));
+    }
   }
 
   function load_file(input: string) {
@@ -192,6 +220,55 @@ export function REPLInput(props: REPLInputProps) {
     }
     command = "";
     input = "";
+  }
+  //we have to call search_file in the handlers
+  function search_file(commandString: string) {
+    let result: string[] = [];
+    let toSearchBy = "";
+    let searchWord = "";
+
+    for (let i = 0; i < commandString.length; i++) {
+      if (commandString[i] == " ") {
+        toSearchBy = commandString.substring(0, i);
+        searchWord = commandString.substring(i + 1);
+      } else {
+        toSearchBy.concat(commandString[i]);
+      }
+    }
+
+    let csvArray = dataMap.get(previousFile);
+    let index = 0;
+    let formattedResult = "";
+    if (typeof Number(toSearchBy) === "number") {
+      for (let i = 0; i < csvArray.length; i++) {
+        if (csvArray[i][Number(toSearchBy)] === searchWord) {
+          result.push(csvArray[i]);
+        }
+      }
+    } else {
+      for (let i = 0; i < csvArray[0].length; i++) {
+        if (csvArray[0][i] === toSearchBy) {
+          index = i;
+        }
+
+        for (let i = 0; i < csvArray.length; i++) {
+          if (csvArray[i][index] === searchWord) {
+            result.push(csvArray[i]);
+          }
+        }
+      }
+    }
+
+    for (let i = 0; i < result.length; i++) {
+      for (let j = 0; j < result[i].length; j++) {
+        formattedResult += result[i][j] + " ";
+      }
+    }
+
+    props.setCommandHistory([
+      ...props.commandHistory,
+      { command: "search", output: formattedResult },
+    ]);
   }
 
   /**
