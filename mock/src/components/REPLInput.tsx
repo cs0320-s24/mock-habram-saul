@@ -121,98 +121,6 @@ export function REPLInput(props: REPLInputProps) {
     }
   }
 
-
-
-  // function handleVerboseSubmit(commandString: string) {
-  //   if (commandString == "") {
-  //     let message = "No command was given, please try again";
-  //     props.setCommandHistory([
-  //       ...props.commandHistory,
-  //       { command: "", output: message },
-  //     ]);
-  //   } else {
-  //     let command = "";
-  //     let input = "";
-  //     for (let i = 0; i < commandString.length; i++) {
-  //       if (commandString[i] == " ") {
-  //         command = commandString.substring(0, i);
-  //         input = commandString.substring(i + 1);
-  //         props.setCommandHistory([
-  //           ...props.commandHistory,
-  //           { command: command, output: input },
-  //         ]);
-  //       } else {
-  //         command.concat(commandString[i]);
-  //       }
-  //     }
-  //     if (!commandString.includes(" ")) {
-  //       let input = "";
-  //       props.setCommandHistory([
-  //         ...props.commandHistory,
-  //         { command: command, output: input },
-  //       ]);
-  //     }
-  //     if (command == "load_file") {
-  //       load_file(input);
-  //     }
-  //     if (command == "view") {
-  //       view_file();
-  //     }
-  //     command = "";
-  //     input = "";
-  //   }
-  //   let s = 1;
-  //   props.setModeSwitch([...props.modeSwitch, s]);
-  //   setCommandString("");
-  // }
-
-  // function handleBriefSubmit(commandString: string) {
-  //   let input = "";
-  //   let command = commandString;
-  //   if (commandString == "") {
-  //     let message = "No command was given, please try again";
-  //     props.setCommandHistory([
-  //       ...props.commandHistory,
-  //       { command: commandString, output: message },
-  //     ]);
-  //   } else {
-  //     props.setCommandHistory([
-  //       ...props.commandHistory,
-  //       { command: command, output: "Command Received" },
-  //     ]);
-  //     setCommandString("");
-  //     let s = 0;
-  //     props.setModeSwitch([...props.modeSwitch, s]);
-  //   }
-  //   for (let i = 0; i < commandString.length; i++) {
-  //     if (commandString[i] == " ") {
-  //       command = commandString.substring(0, i);
-  //       input = commandString.substring(i + 1);
-  //       props.setCommandHistory([
-  //         ...props.commandHistory,
-  //         { command: command, output: input },
-  //       ]);
-  //     } else {
-  //       command.concat(commandString[i]);
-  //     }
-  //   }
-  //   if (!commandString.includes(" ")) {
-  //     props.setCommandHistory([
-  //       ...props.commandHistory,
-  //       { command: commandString, output: input },
-  //     ]);
-  //   }
-  //   if (command == "load_file") {
-  //     load_file(input);
-  //   }
-  //   if (command == "view") {
-  //     view_file();
-  //   }
-  //   command = "";
-  //   input = "";
-  // }
-
-
   //we have to call search_file in the handlers
   // function search_file(commandString: string) {
   //   let result: string[] = [];
@@ -288,33 +196,6 @@ export function REPLInput(props: REPLInputProps) {
         onClick= {() => {
           handleSubmit(cString);
         }}
-        // {() => {
-        //   let tempModeSwitch;
-        //   if (commandString.toLowerCase() == "mode") {
-        //     if (props.modeSwitch.length > 0) {
-        //       if (props.modeSwitch[props.modeSwitch.length - 1] == 0) {
-        //         tempModeSwitch = 1;
-        //       } else {
-        //         tempModeSwitch = 0;
-        //       }
-        //     } else {
-        //       tempModeSwitch = 0;
-        //     }
-        //     props.setModeSwitch([...props.modeSwitch, tempModeSwitch]);
-
-        //     props.setCommandHistory([
-        //       ...props.commandHistory,
-        //       { command: "mode", output: "Mode switch successful" },
-        //     ]);
-        //   } else {
-        //     if (props.modeSwitch[props.modeSwitch.length - 1] == 1) {
-        //       handleVerboseSubmit(commandString);
-        //     } else {
-        //       handleBriefSubmit(commandString);
-        //     }
-        //   }
-        //   setCommandString("");
-        // }}
       >
         Submit!
       </button>
