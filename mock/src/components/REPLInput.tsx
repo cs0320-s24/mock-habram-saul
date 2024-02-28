@@ -3,15 +3,19 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { ControlledInput } from "./ControlledInput";
 
 interface REPLInputProps {
-  cHistory: {command: string; output: string}[];
+  cHistory: { command: string; output: string }[];
   setCHistory: Dispatch<SetStateAction<{ command: string; output: string }[]>>;
-  cMode : string; 
+  cMode: string;
   setCMode: Dispatch<SetStateAction<string>>;
+}
+
+export interface REPLFunction {
+  commandMap: Map<string, Function>;
 }
 
 // You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
 // REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
-export function REPLInput(props: REPLInputProps) {
+export function REPLInput(props: REPLInputProps, commandMap: REPLFunction) {
   const [cString, setCString] = useState<string>("");
   const [prevFile, setPrevFile] = useState<string>("");
   const [hasFileBeenLoaded, setHasFileBeenLoaded] = useState<number>(0);
@@ -25,13 +29,37 @@ export function REPLInput(props: REPLInputProps) {
     [1, 2, 3, 4, 5],
     ["Japan", "is", "pretty", "hard", ":(."],
   ];
+  const exampleCSV3 = [["Tacos", "Pizza", "Ice cream", "Donuts", "Soda"]];
   dataMap.set("data/songs/exampleCSV1", exampleCSV1);
   dataMap.set("data/songs/exampleCSV2", exampleCSV2);
+  dataMap.set("data/foods/exampleCSV3", exampleCSV3);
+
+  function addCommands(command: string, commandFunction: Function) {
+    commandMap.commandMap.set(command, commandFunction);
+  }
+
+  function runCommand(commandFunction: Function) {
+    commandFunction();
+  }
+
+  function makeTableHTML(myArray: string[][]) {
+    var result = "<table border=1>";
+    for (var i = 0; i < myArray.length; i++) {
+      result += "<tr>";
+      for (var j = 0; j < myArray[i].length; j++) {
+        result += "<td>" + myArray[i][j] + "</td>";
+      }
+      result += "</tr>";
+    }
+    result += "</table>";
+
+    return result;
+  }
 
   function modeCall() {
     let c = "mode";
-    let newMode = ""
-    let o = "Mode successfully changed to: "
+    let newMode = "";
+    let o = "Mode successfully changed to: ";
     if (props.cMode == "brief") {
       newMode = "verbose";
       props.setCMode(newMode);
@@ -40,17 +68,17 @@ export function REPLInput(props: REPLInputProps) {
       props.setCMode(newMode);
     }
 
-    props.setCHistory([...props.cHistory, {command: c, output: o + newMode}]);
+    props.setCHistory([...props.cHistory, { command: c, output: o + newMode }]);
   }
 
   function view_file() {
     let c = "view";
     if (prevFile == "") {
       let o = "A file first needs to be loaded before performing view";
-      props.setCHistory([...props.cHistory,{command: c, output: o}]);
+      props.setCHistory([...props.cHistory, { command: c, output: o }]);
     } else {
-      let o  = dataMap.get(prevFile).toString(); 
-      props.setCHistory([...props.cHistory, {command: c, output: o}]);
+      let o = dataMap.get(prevFile).toString();
+      props.setCHistory([...props.cHistory, { command: c, output: o }]);
     }
   }
 
@@ -60,11 +88,11 @@ export function REPLInput(props: REPLInputProps) {
     let c = "load_file";
 
     if (!dataMap.has(input)) {
-      let o = "Invalid filepath; please try again"
-      props.setCHistory([...props.cHistory, {command: c, output: o}])
+      let o = "Invalid filepath; please try again";
+      props.setCHistory([...props.cHistory, { command: c, output: o }]);
     } else if (dataMap.has(input) && hasFileBeenLoaded === 0) {
-      let o = "File successfully loaded"; 
-      props.setCHistory([...props.cHistory, {command: c, output: o}]);
+      let o = "File successfully loaded";
+      props.setCHistory([...props.cHistory, { command: c, output: o }]);
       pFile = input;
       setPrevFile(pFile);
       lFile = 1;
@@ -72,104 +100,78 @@ export function REPLInput(props: REPLInputProps) {
     } else if (hasFileBeenLoaded == 1) {
       if (input === prevFile) {
         let o = "Desired file has already been loaded";
-        props.setCHistory([...props.cHistory, {command: c, output: o}]);
+        props.setCHistory([...props.cHistory, { command: c, output: o }]);
       } else if (input === "") {
         let o = "In order to load a file, you must insert a filepath";
-        props.setCHistory([...props.cHistory, {command: c, output: o}]);
+        props.setCHistory([...props.cHistory, { command: c, output: o }]);
       } else {
         let o = "Loaded file has been updated to " + input;
         pFile = input;
         setPrevFile(pFile);
-        props.setCHistory([...props.cHistory, {command: c, output: o}]);
+        props.setCHistory([...props.cHistory, { command: c, output: o }]);
       }
     } else if (hasFileBeenLoaded == 0) {
-      let o = "No file has been previously loaded! Please enter a filepath alongside the load_file command";
-      props.setCHistory([...props.cHistory, {command: c, output: o}]);
+      let o =
+        "No file has been previously loaded! Please enter a filepath alongside the load_file command";
+      props.setCHistory([...props.cHistory, { command: c, output: o }]);
     }
   }
 
-  function handleSubmit(input : string) {
+  function handleSubmit(input: string) {
     let c = "";
     let v = "";
+    let d = "";
+    let b = [];
 
     if (input === "") {
       let o = "No command was given, please try again";
-      props.setCHistory([...props.cHistory, {command: "", output: o}]);
+      props.setCHistory([...props.cHistory, { command: "", output: o }]);
     } else {
       for (let i = 0; i < input.length; i++) {
         if (input[i] === " ") {
-          c = input.substring(0, i);
-          v = input.substring(i + 1);
-          /**
-           * Ideally, we will remove the remaining portion of this if-statement as we will utilize c
-           * as the command that we will follow (i.e., view, load_file, etc...)
-           */
-          props.setCHistory([...props.cHistory, {command: c, output: v}]);
+          b.push(i);
         }
       }
+      c = input.substring(0, b[0]);
+      v = input.substring(b[0] + 1, b[1]);
+      d = input.substring(b[1] + 1, b[2]);
+
       if (!input.includes(" ")) {
-        c = input; 
+        c = input;
       }
     }
 
-    if (c === "view") {
-      view_file();
-    } else if (c === "load_file") {
-      load_file(v);
-    } else if (c === "mode") {
-      modeCall();
-    }
+    let doesThisExist = commandMap.commandMap.get(c);
+    runCommand(doesThisExist);
+
+    // if (c === "view") {
+    //   view_file();
+    // } else if (c === "load_file") {
+    //   load_file(v);
+    // } else if (c === "mode") {
+    //   modeCall();
+    // } else if (c === "search") {
+    //   search(v, d);
+    // }
   }
 
-  //we have to call search_file in the handlers
-  // function search_file(commandString: string) {
-  //   let result: string[] = [];
-  //   let toSearchBy = "";
-  //   let searchWord = "";
-
-  //   for (let i = 0; i < commandString.length; i++) {
-  //     if (commandString[i] == " ") {
-  //       toSearchBy = commandString.substring(0, i);
-  //       searchWord = commandString.substring(i + 1);
-  //     } else {
-  //       toSearchBy.concat(commandString[i]);
-  //     }
-  //   }
-
-  //   let csvArray = dataMap.get(previousFile);
-  //   let index = 0;
-  //   let formattedResult = "";
-  //   if (typeof Number(toSearchBy) === "number") {
-  //     for (let i = 0; i < csvArray.length; i++) {
-  //       if (csvArray[i][Number(toSearchBy)] === searchWord) {
-  //         result.push(csvArray[i]);
-  //       }
-  //     }
-  //   } else {
-  //     for (let i = 0; i < csvArray[0].length; i++) {
-  //       if (csvArray[0][i] === toSearchBy) {
-  //         index = i;
-  //       }
-
-  //       for (let i = 0; i < csvArray.length; i++) {
-  //         if (csvArray[i][index] === searchWord) {
-  //           result.push(csvArray[i]);
-  //         }
-  //       }
-  //     }
-  //   }
-
-  //   for (let i = 0; i < result.length; i++) {
-  //     for (let j = 0; j < result[i].length; j++) {
-  //       formattedResult += result[i][j] + " ";
-  //     }
-  //   }
-
-  //   props.setCommandHistory([
-  //     ...props.commandHistory,
-  //     { command: "search", output: formattedResult },
-  //   ]);
-  // }
+  function search(vS: string, dS: string) {
+    let s = "search ";
+    if (prevFile != "") {
+      let o = dataMap.get(prevFile).toString();
+      props.setCHistory([
+        ...props.cHistory,
+        { command: s + vS + dS, output: o },
+      ]);
+    } else {
+      let o =
+        "No file has been loaded. Please load a file before running search";
+      props.setCHistory([
+        ...props.cHistory,
+        { command: s + vS + dS, output: o },
+      ]);
+    }
+  }
 
   /**
    * We suggest breaking down this component into smaller components, think about the individual pieces
@@ -193,7 +195,7 @@ export function REPLInput(props: REPLInputProps) {
       {/* TODO WITH TA: Build a handleSubmit function that increments count and displays the text in the button */}
       {/* TODO: Currently this button just counts up, can we make it push the contents of the input box to the history?*/}
       <button
-        onClick= {() => {
+        onClick={() => {
           handleSubmit(cString);
         }}
       >
