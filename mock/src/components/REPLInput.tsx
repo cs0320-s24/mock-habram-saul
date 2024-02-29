@@ -7,19 +7,18 @@ interface REPLInputProps {
   setCHistory: Dispatch<SetStateAction<{ command: string; output: string }[]>>;
   cMode: string;
   setCMode: Dispatch<SetStateAction<string>>;
-}
-
-export interface REPLFunction {
   commandMap: Map<string, Function>;
+  setCommandMap: Dispatch<SetStateAction<Map<string, Function>>>;
 }
-
 // You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
 // REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
-export function REPLInput(props: REPLInputProps, commandMap: REPLFunction) {
+export function REPLInput(props: REPLInputProps) {
   const [cString, setCString] = useState<string>("");
   const [prevFile, setPrevFile] = useState<string>("");
   const [hasFileBeenLoaded, setHasFileBeenLoaded] = useState<number>(0);
-
+  props.commandMap.set("load_file", load_file);
+  props.commandMap.set("view", view_file);
+  props.commandMap.set("search", search);
   let dataMap = new Map();
   const exampleCSV1 = [
     [1, 2, 3, 4, 5],
@@ -34,26 +33,23 @@ export function REPLInput(props: REPLInputProps, commandMap: REPLFunction) {
   dataMap.set("data/songs/exampleCSV2", exampleCSV2);
   dataMap.set("data/foods/exampleCSV3", exampleCSV3);
 
-  function addCommands(command: string, commandFunction: Function) {
-    commandMap.commandMap.set(command, commandFunction);
-  }
-
   function runCommand(commandFunction: Function) {
     commandFunction();
   }
 
   function makeTableHTML(myArray: string[][]) {
-    var result = "<table border=1>";
+    // var result = [];
+    var finalString = "<center><table border =1>";
     for (var i = 0; i < myArray.length; i++) {
-      result += "<tr>";
+      finalString += "<tr>";
       for (var j = 0; j < myArray[i].length; j++) {
-        result += "<td>" + myArray[i][j] + "</td>";
+        finalString += "<td>" + myArray[i][j] + "</td>";
       }
-      result += "</tr>";
+      finalString += "</tr>";
     }
-    result += "</table>";
+    finalString += "</table></center>";
 
-    return result;
+    return finalString;
   }
 
   function modeCall() {
@@ -77,7 +73,7 @@ export function REPLInput(props: REPLInputProps, commandMap: REPLFunction) {
       let o = "A file first needs to be loaded before performing view";
       props.setCHistory([...props.cHistory, { command: c, output: o }]);
     } else {
-      let o = dataMap.get(prevFile).toString();
+      let o = makeTableHTML(dataMap.get(prevFile));
       props.setCHistory([...props.cHistory, { command: c, output: o }]);
     }
   }
@@ -119,46 +115,62 @@ export function REPLInput(props: REPLInputProps, commandMap: REPLFunction) {
 
   function handleSubmit(input: string) {
     let c = "";
-    let v = "";
-    let d = "";
-    let b = [];
+    let v = [];
+    // let d = "";
+    // let b = [];
 
     if (input === "") {
       let o = "No command was given, please try again";
       props.setCHistory([...props.cHistory, { command: "", output: o }]);
-    } else {
-      for (let i = 0; i < input.length; i++) {
-        if (input[i] === " ") {
-          b.push(i);
-        }
-      }
-      c = input.substring(0, b[0]);
-      v = input.substring(b[0] + 1, b[1]);
-      d = input.substring(b[1] + 1, b[2]);
-
-      if (!input.includes(" ")) {
-        c = input;
-      }
     }
+    let parts = input.split(/\s+/);
+    c = parts[0];
+    v = parts.slice(1);
+    // c = input.substring(0, b[0]);
+    // v = input.substring(b[0] + 1, b[1]);
+    // d = input.substring(b[1] + 1, b[2]);
 
-    let doesThisExist = commandMap.commandMap.get(c);
-    runCommand(doesThisExist);
+    // if (!input.includes(" ")) {
+    //   c = input;
+    // }
+    // }
+    if (props.commandMap.has(c)) {
+      const func = props.commandMap.get(c)!; // Non-null assertion
+      try {
+        const output = func(...v); // Assuming func should be called with the arguments in v
+        props.setCHistory([...props.cHistory, { command: c, output: output }]);
+      } catch (error) {
+        props.setCHistory([
+          ...props.cHistory,
+          {
+            command: c,
+            output: "Error executing command: " + c,
+          },
+        ]);
+      }
+    } else {
+      let o = "Command does not exist. Please try again.";
+      props.setCHistory([...props.cHistory, { command: "", output: o }]);
+    }
+    // let doesThisExist = props.commandMap.get(c);
+    // runCommand(doesThisExist);
 
     // if (c === "view") {
     //   view_file();
     // } else if (c === "load_file") {
-    //   load_file(v);
-    // } else if (c === "mode") {
-    //   modeCall();
-    // } else if (c === "search") {
-    //   search(v, d);
+    //   load_file("data/songs/exampleCSV2");
+    //   // } else if (c === "mode") {
+    //   //   modeCall();
+    //   // } else if (c === "search") {
+    //   //   search(v, d);
+    //   // }
     // }
   }
 
   function search(vS: string, dS: string) {
     let s = "search ";
     if (prevFile != "") {
-      let o = dataMap.get(prevFile).toString();
+      let o = makeTableHTML(dataMap.get(prevFile));
       props.setCHistory([
         ...props.cHistory,
         { command: s + vS + dS, output: o },

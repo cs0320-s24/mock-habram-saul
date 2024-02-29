@@ -16,6 +16,11 @@
   overflow: scroll;
 }
 
+.repl-history-output {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .repl-input {
   margin: auto;
   height: 10vh;

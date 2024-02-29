@@ -18,6 +18,10 @@ export default function REPL() {
     { command: string; output: string }[]
   >([]);
   const [cMode, setCMode] = useState<string>("brief");
+  const [commandMap, setCommandMap] = useState<Map<string, Function>>(
+    new Map<string, Function>()
+  );
+
   // const setModeSwitch = useState<number[]>();
   // const [history, setHistory] = useState<[string, string]>(["", ""]);
   return (
@@ -32,6 +36,8 @@ export default function REPL() {
         setCHistory={setCHistory}
         cMode={cMode}
         setCMode={setCMode}
+        commandMap={commandMap}
+        setCommandMap={setCommandMap}
       />
     </div>
   );
