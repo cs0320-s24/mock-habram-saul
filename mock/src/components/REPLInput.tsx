@@ -11,7 +11,6 @@ interface REPLInputProps {
   setCommandMap: Dispatch<SetStateAction<Map<string, Function>>>;
 }
 // You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
-// REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
 export function REPLInput(props: REPLInputProps) {
   const [cString, setCString] = useState<string>("");
   const [prevFile, setPrevFile] = useState<string>("");
@@ -19,6 +18,7 @@ export function REPLInput(props: REPLInputProps) {
   props.commandMap.set("load_file", load_file);
   props.commandMap.set("view", view_file);
   props.commandMap.set("search", search);
+  props.commandMap.set("mode", modeCall);
   let dataMap = new Map();
   const exampleCSV1 = [
     [1, 2, 3, 4, 5],
@@ -29,13 +29,17 @@ export function REPLInput(props: REPLInputProps) {
     ["Japan", "is", "pretty", "hard", ":(."],
   ];
   const exampleCSV3 = [["Tacos", "Pizza", "Ice cream", "Donuts", "Soda"]];
+  const exampleCSV4 = [
+    [1, 2, 3, 4, 5],
+    ["Japan", "is", "pretty", "hard", "."],
+    ["Learn", "german", "instead", "you"],
+    ["was", "bedeutet", "dieser", "satz"],
+    ["du", "weibt", "nicht", "hundin"],
+  ];
   dataMap.set("data/songs/exampleCSV1", exampleCSV1);
   dataMap.set("data/songs/exampleCSV2", exampleCSV2);
   dataMap.set("data/foods/exampleCSV3", exampleCSV3);
-
-  function runCommand(commandFunction: Function) {
-    commandFunction();
-  }
+  dataMap.set("data/language/exampleCSV4", exampleCSV4);
 
   function makeTableHTML(myArray: string[][]) {
     // var result = [];
@@ -116,55 +120,20 @@ export function REPLInput(props: REPLInputProps) {
   function handleSubmit(input: string) {
     let c = "";
     let v = [];
-    // let d = "";
-    // let b = [];
-
-    if (input === "") {
-      let o = "No command was given, please try again";
-      props.setCHistory([...props.cHistory, { command: "", output: o }]);
-    }
     let parts = input.split(/\s+/);
     c = parts[0];
     v = parts.slice(1);
-    // c = input.substring(0, b[0]);
-    // v = input.substring(b[0] + 1, b[1]);
-    // d = input.substring(b[1] + 1, b[2]);
 
-    // if (!input.includes(" ")) {
-    //   c = input;
-    // }
-    // }
-    if (props.commandMap.has(c)) {
-      const func = props.commandMap.get(c)!; // Non-null assertion
-      try {
-        const output = func(...v); // Assuming func should be called with the arguments in v
-        props.setCHistory([...props.cHistory, { command: c, output: output }]);
-      } catch (error) {
-        props.setCHistory([
-          ...props.cHistory,
-          {
-            command: c,
-            output: "Error executing command: " + c,
-          },
-        ]);
-      }
-    } else {
-      let o = "Command does not exist. Please try again.";
+    if (input === "" || input === " ") {
+      let o = "No command was given, please try again";
       props.setCHistory([...props.cHistory, { command: "", output: o }]);
+    } else if (props.commandMap.has(c)) {
+      const func = props.commandMap.get(c)!;
+      func(...v); //
+    } else {
+      let o = "Command not found";
+      props.setCHistory([...props.cHistory, { command: c, output: o }]);
     }
-    // let doesThisExist = props.commandMap.get(c);
-    // runCommand(doesThisExist);
-
-    // if (c === "view") {
-    //   view_file();
-    // } else if (c === "load_file") {
-    //   load_file("data/songs/exampleCSV2");
-    //   // } else if (c === "mode") {
-    //   //   modeCall();
-    //   // } else if (c === "search") {
-    //   //   search(v, d);
-    //   // }
-    // }
   }
 
   function search(vS: string, dS: string) {
@@ -207,8 +176,10 @@ export function REPLInput(props: REPLInputProps) {
       {/* TODO WITH TA: Build a handleSubmit function that increments count and displays the text in the button */}
       {/* TODO: Currently this button just counts up, can we make it push the contents of the input box to the history?*/}
       <button
+        aria-label="Submit!"
         onClick={() => {
           handleSubmit(cString);
+          setCString("");
         }}
       >
         Submit!
