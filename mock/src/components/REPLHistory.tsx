@@ -19,7 +19,7 @@ interface REPLHistoryProps {
  * @returns {JSX.Element} A JSX.Element that displays the history of executed commands and their results
  */
 export function REPLHistory(props: REPLHistoryProps) {
-  const createMarkup = (htmlString: string) => {
+  const createHTML = (htmlString: string) => {
     return { __html: htmlString };
   };
 
@@ -33,7 +33,7 @@ export function REPLHistory(props: REPLHistoryProps) {
               {command.output.startsWith("<center") ? (
                 <div
                   className="repl-history-output"
-                  dangerouslySetInnerHTML={createMarkup(command.output)}
+                  dangerouslySetInnerHTML={createHTML(command.output)}
                 />
               ) : (
                 command.output
@@ -46,7 +46,7 @@ export function REPLHistory(props: REPLHistoryProps) {
               {command.output.startsWith("<center") ? (
                 <div
                   className="repl-history-output"
-                  dangerouslySetInnerHTML={createMarkup(command.output)}
+                  dangerouslySetInnerHTML={createHTML(command.output)}
                 />
               ) : (
                 command.output
