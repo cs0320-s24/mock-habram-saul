@@ -4,14 +4,20 @@ import { REPLHistory } from "./REPLHistory";
 import { REPLInput } from "./REPLInput";
 import { Dispatch, SetStateAction } from "react";
 
-/* 
-  You'll want to expand this component (and others) for the sprints! Remember 
-  that you can pass "props" as function arguments. If you need to handle state 
-  at a higher level, just move up the hooks and pass the state/setter as a prop.
-  
-  This is a great top level component for the REPL. It's a good idea to have organize all components in a component folder.
-  You don't need to do that for this gearup.
-*/
+/**
+ * This function is responsible for passing shared state props to REPLHistory and REPLInput
+ * @interface REPL
+ * @property {command: string, output: string} cHistory: this prop serves to record the entire history of the
+ * commands that were input into the command line. this information is stored in the form of a list of tuples
+ * @property {Array<{command: string, output: string}>} setCHistory: this props serves to update the cHistory
+ * @property {string} cMode: this prop serves to record the current mode of information we must diplay.
+ * this information is stored in stored in the form of a string (either "brief" or "verbose")
+ * @property {string} setCMode: this prop serves to update the cMode
+ * @property {Map<string, function>} commandMap: this prop serve to store the event handlers that another
+ * developer would like to be able to utilize when running Mock. this information is stored in a Map, which
+ * stores string keys and has values of type function.
+ * @property {Map<string, funtion>} setCommandMap: this prop serves to update the commandMap
+ */
 
 export default function REPL() {
   const [cHistory, setCHistory] = useState<
@@ -22,13 +28,10 @@ export default function REPL() {
     new Map<string, Function>()
   );
 
-  // const setModeSwitch = useState<number[]>();
-  // const [history, setHistory] = useState<[string, string]>(["", ""]);
   return (
     <div className="repl">
-      {/*This is where your REPLHistory might go... You also may choose to add it within your REPLInput 
-      component or somewhere else depending on your component organization. What are the pros and cons of each? */}
-      {/* TODO: Update your REPLHistory and REPLInput to take in new shared state as props */}
+      {}
+      {}
       <REPLHistory commandHistory={cHistory} modeSwitch={cMode} />
       <hr></hr>
       <REPLInput
