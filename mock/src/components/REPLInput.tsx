@@ -37,26 +37,43 @@ export function REPLInput(props: REPLInputProps) {
   props.commandMap.set("search", search);
   props.commandMap.set("mode", modeCall);
   let dataMap = new Map();
-  const exampleCSV1 = [
-    [1, 2, 3, 4, 5],
-    ["The", "song", "remains", "the", "same."],
+
+  const csvToBeLoaded = [
+    ["City", "State", "StateID", "Race", "RaceID"],
+    ["Atlanta", "Georgia", "0300", "White", "07"],
+    ["Houston", "Texas", "0901", "Asian", "02"],
+    ["Seattle", "Washington", "0729", "Latino", "03"],
+    ["Pheonix", "Arizona", "1505", "Black", "01"]
   ];
-  const exampleCSV2 = [
-    [1, 2, 3, 4, 5],
-    ["Japan", "is", "pretty", "hard", ":(."],
+
+  const csvWithOneColumn = [
+    [1],
+    ["Having"],
+    ["One"],
+    ["Column"],
+    ["Is"],
+    ["Pretty"],
+    ["Strange"],
+    ["Huh?"],
+    [":3"]
   ];
-  const exampleCSV3 = [["Tacos", "Pizza", "Ice cream", "Donuts", "Soda"]];
-  const exampleCSV4 = [
+
+  const csvToBeLoadedSearch = [
+    ["Atlanta", "Georgia", "0300", "White", "07"]
+  ]
+
+  const csvAdditionalView = [
     [1, 2, 3, 4, 5],
     ["Japan", "is", "pretty", "hard", "."],
     ["Learn", "german", "instead", "you"],
     ["was", "bedeutet", "dieser", "satz"],
     ["du", "weibt", "nicht", "hundin"],
   ];
-  dataMap.set("data/songs/exampleCSV1", exampleCSV1);
-  dataMap.set("data/songs/exampleCSV2", exampleCSV2);
-  dataMap.set("data/foods/exampleCSV3", exampleCSV3);
-  dataMap.set("data/language/exampleCSV4", exampleCSV4);
+
+  dataMap.set("data/CSVToBeLoaded", csvToBeLoaded);
+  dataMap.set("data/CSVWithOneColumn", csvWithOneColumn);
+  dataMap.set("data/CSVToBeLoadedSearch", csvToBeLoadedSearch);
+  dataMap.set("data/CSVAdditionalView", csvAdditionalView);
 
   /**
    * This function is responsible for converting the contents of a "CSV" into an html table so that it can be
@@ -119,7 +136,8 @@ export function REPLInput(props: REPLInputProps) {
   /**
    * This function is responsible for updated the const hasFileBeenLoaded. This constant is used to facilitate
    * the calling of "loaded" CSV files and makes running the "view" command possible
-   * @param   */
+   * @param {string} input: this string represents the filepath of the CSV that wants to be loaded
+   */
 
   function load_file(input: string) {
     let lFile = 0;
@@ -155,13 +173,15 @@ export function REPLInput(props: REPLInputProps) {
       props.setCHistory([...props.cHistory, { command: c, output: o }]);
     }
   }
-  /**This function is responsible for reading from the command terminal by parsing the string passed in by the user and breaking it up
+
+  /**
+   * This function is responsible for reading from the command terminal by parsing the string passed in by the user and breaking it up
    * into the command itself and its respective arguments. It then checks if the commandMap contains that particular command, and calls the
    * function, passing in the appropriate parameters if the function being called needs it. Otherwise, it will print the appropriate message
    * if the command is not found
    * @param {string} input: this represents the input to the command terminal within the Mock website. Within this function
    * it is parsed in order to seperate the command from any of its arguments, which are later passed ont
-   * * */
+   */
   function handleSubmit(input: string) {
     let c = "";
     let v = [];
@@ -180,25 +200,21 @@ export function REPLInput(props: REPLInputProps) {
       props.setCHistory([...props.cHistory, { command: c, output: o }]);
     }
   }
-  /**This function is responsible showing the row that matches the user's search request. It represents the output in the format of an HTML table
+
+  /** 
+   * This function is responsible showing the row that matches the user's search request. It represents the output in the format of an HTML table
    * for ease of readeability. IIf no file has been loaded in first,  it will give the appropriate output.
-   *  * @param {string} columnIdentifier: this represents the first parameter of the search command. It is the column identifier
-   * * @param {string} value: this represents the second parameter of the search command. It is the value we would like to search for*/
+   * @param {string} columnIdentifier: this represents the first parameter of the search command. It is the column identifier
+   * @param {string} value: this represents the second parameter of the search command. It is the value we would like to search for*/
   function search(columnIdentifier: string, value: string) {
     let s = "search ";
     if (prevFile != "") {
-      let o = makeTableHTML(dataMap.get(prevFile));
-      props.setCHistory([
-        ...props.cHistory,
-        { command: s + columnIdentifier + value, output: o },
-      ]);
+      let newFile = prevFile + "Search"
+      let o = makeTableHTML(dataMap.get(newFile));
+      props.setCHistory([...props.cHistory, {command: s + columnIdentifier + "" + value, output: o}]);
     } else {
-      let o =
-        "No file has been loaded. Please load a file before running search";
-      props.setCHistory([
-        ...props.cHistory,
-        { command: s + columnIdentifier + value, output: o },
-      ]);
+      let o = "No file has been loaded. Please load a file before running search";
+      props.setCHistory([...props.cHistory, {command: s + columnIdentifier + "" + value, output: o}]);
     }
   }
 
