@@ -36,3 +36,4 @@ view
 load_file data/CSVToBeLoaded
 search Race White
 
+mock/node_modules
